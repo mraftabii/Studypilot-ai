@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyPilot AI</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f0f4ff;
+    color: #1e293b;
+    margin: 0;
+    padding: 25px 14px;
+}
+
+.container {
+    max-width: 720px;
+    margin: auto;
+    background: white;
+    padding: 24px;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px #cbd5e1;
+}
+
+h1 { color: #4f46e5; margin-bottom: 5px; }
+.subtitle { color: #64748b; margin-bottom: 25px; }
+
+.motivation {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    padding: 20px;
+    border-radius: 14px;
+    margin: 20px 0;
+}
+
+#quote { font-size: 17px; line-height: 1.5; }
+
+.summary, .field-card {
+    background: #eef2ff;
+    padding: 16px;
+    border-radius: 12px;
+    margin: 18px 0;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 7px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font-size: 15px;
+    background: white;
+}
+
+button {
+    border: none;
+    border-radius: 9px;
+    padding: 13px;
+    background: #4f46e5;
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+button:hover { background: #3730a3; }
+
+.primary { width: 100%; margin-top: 20px; }
+
+.mode-choice {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 25px;
+}
+
+.mode-card {
+    background: #f8faff;
+    color: #3730a3;
+    border: 2px solid #e0e7ff;
+    padding: 20px 12px;
+    line-height: 1.6;
+}
+
+.mode-card:hover {
+    background: #eef2ff;
+    border-color: #818cf8;
+}
+
+.mode-card strong { font-size: 18px; }
+
+.back-btn {
+    background: #64748b;
+    margin-bottom: 18px;
+}
+
+.plan {
+    background: #f8faff;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #4f46e5;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 14px;
+    overflow-wrap: anywhere;
+}
+
+.plan.completed { border-left-color: #16a34a; }
+.plan h3 { margin-top: 0; }
+
+.countdown {
+    padding: 12px;
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 9px;
+    font-weight: bold;
+    line-height: 1.6;
+}
+
+.completed .countdown {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.plan-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.plan-actions button { flex: 1; min-width: 120px; }
+.delete-btn { background: #dc2626; }
+.delete-btn:hover { background: #991b1b; }
+.secondary { background: #64748b; }
+
+.empty { color: #64748b; padding: 15px 0; }
+
+.hidden { display: none !important; }
+
+@media (max-width: 480px) {
+    .mode-choice { grid-template-columns: 1fr; }
+    .container { padding: 18px; }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <header>
+        <h1>📚 StudyPilot AI</h1>
+        <p class="subtitle">Your goals. Your plan. Your progress.</p>
+    </header>
+
+    <!-- HOME: CHOOSE A MODE -->
+    <section id="home">
+        <div class="motivation">
+            <h2>✨ Your Daily Motivation</h2>
+            <p id="quote">Small steps every day lead to big results.</p>
+            <small id="quoteAuthor">— StudyPilot</small>
+        </div>
+
+        <h2>What would you like to plan?</h2>
+        <p>Choose the option that matches your goal.</p>
+
+        <div class="mode-choice">
+            <button class="mode-card" id="openExam">
+                <strong>🎓 Exam Mode</strong><br>
+                Plan exam preparation<br>
+                Track exam date and time
+            </button>
+
+            <button class="mode-card" id="openTask">
+                <strong>✅ Task Mode</strong><br>
+                Plan a task or assignment<br>
+                Track duration and deadline
+            </button>
+        </div>
+        
+     
+        <h2>📋 All Tasks & Exams</h2>
+        <p>Your complete schedule in one place.</p>
+        <div id="allItems">
+            <p class="empty">Loading your tasks and exams...</p>
+        </div>
+
+    </section>
+
+    <!-- EXAM MODE -->
+    <section id="examPage" class="hidden">
+        <button class="back-btn" id="examBack">← Back to Home</button>
+
+        <h2>🎓 Exam Mode</h2>
+        <p>Organize your subjects and prepare for your exams.</p>
+
+        <div class="motivation">
+            <h2>✨ Keep Going!</h2>
+            <p id="examQuote"></p>
+        </div>
+
+        <div class="summary">
+            <strong>📅 Next Upcoming Exam</strong>
+            <p id="nextExam">Add an exam to start your countdown.</p>
+        </div>
+
+        <h3>Create an Exam Plan</h3>
+
+        <form id="examForm">
+            <label for="examSubject">Subject</label>
+            <input id="examSubject" required
+                   placeholder="e.g. Physics">
+
+            <label for="examTopic">Topic or Syllabus</label>
+            <input id="examTopic" required
+                   placeholder="e.g. Electrostatics">
+
+            <label for="examDate">Exam Date</label>
+            <input id="examDate" type="date" required>
+
+            <label for="examTime">Exam Time</label>
+            <input id="examTime" type="time" required>
+
+            <button class="primary" type="submit">
+                + Add Exam Plan
+            </button>
+        </form>
+
+        <h3>My Exam Plans</h3>
+        <div id="examPlans"></div>
+    </section>
+
+    <!-- TASK MODE -->
+    <section id="taskPage" class="hidden">
+        <button class="back-btn" id="taskBack">← Back to Home</button>
+
+        <h2>✅ Task Completion Mode</h2>
+        <p>Break your work into manageable tasks and track each deadline.</p>
+
+        <div class="summary">
+            <strong>⏱️ Task Dashboard</strong>
+            <p id="taskSummary">Create your first task to get started!</p>
+        </div>
+
+        <h3>Create a Task</h3>
+
+        <form id="taskForm">
+            <label for="taskSubject">Subject or Category</label>
+            <input id="taskSubject" required
+                   placeholder="e.g. Chemistry">
+
+            <label for="taskTopic">Task or Topic</label>
+            <input id="taskTopic" required
+                   placeholder="e.g. Revise Chemical Kinetics">
+
+            <label>Estimated Duration</label>
+            <div class="field-card">
+                <label for="durationHours">Hours</label>
+                <input id="durationHours" type="number"
+                       min="0" max="1000" value="1" required>
+
+                <label for="durationMinutes">Minutes</label>
+                <input id="durationMinutes" type="number"
+                       min="0" max="59" value="0" required>
+            </div>
+
+            <label for="taskDeadline">Task Deadline — Date and Time</label>
+            <input id="taskDeadline" type="datetime-local" required>
+
+            <button class="primary" type="submit">
+                + Add Task
+            </button>
+        </form>
+
+        <h3>My Tasks</h3>
+        <div id="taskPlans"></div>
+    </section>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const quotes = [
+    ["Small steps every day lead to big results.", "StudyPilot"],
+    ["Your future is built by what you do today.", "StudyPilot"],
+    ["Consistency beats occasional bursts of motivation.", "StudyPilot"],
+    ["Start where you are. Do what you can.", "Arthur Ashe"],
+    ["Every topic you master is progress worth celebrating.", "StudyPilot"],
+    ["Don't count the hours. Make the hours count.", "StudyPilot"],
+    ["A difficult chapter is a challenge, not a dead end.", "StudyPilot"],
+    ["Progress, not perfection.", "StudyPilot"],
+    ["Your effort today builds your confidence tomorrow.", "StudyPilot"],
+    ["One task at a time. Keep moving forward.", "StudyPilot"]
+];
+
+function getSaved(key) {
+    try {
+        const value = JSON.parse(localStorage.getItem(key) || "[]");
+        return Array.isArray(value) ? value : [];
+    } catch {
+        return [];
+    }
+}
+
+let exams = getSaved("studyPilotPlans");
+let tasks = getSaved("studyPilotTasks");
+
+function save(key, data) {
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch {
+        alert("Your browser could not save the changes. Check your browser storage.");
+    }
+}
+
+function escapeDateTime(date, time = "23:59") {
+    return new Date(date + "T" + time + ":00").getTime();
+}
+
+function formatRemaining(target) {
+    const difference = target - Date.now();
+
+    if (difference <= 0) {
+        return difference < 0
+            ? "Deadline passed"
+            : "Deadline reached!";
+    }
+
+    const totalSeconds = Math.floor(difference / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${days}d ${hours}h ${minutes}m ${seconds}s remaining`;
+}
+
+function formatDuration(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours} hour(s) ${mins} minute(s)`;
+}
+
+function showQuote() {
+    const index = Math.floor(Date.now() / 1800000) % quotes.length;
+    $("quote").textContent = quotes[index][0];
+    $("quoteAuthor").textContent = "— " + quotes[index][1];
+    $("examQuote").textContent = quotes[index][0];
+}
+
+function showPage(page) {
+    ["home", "examPage", "taskPage"].forEach(id => {
+        $(id).classList.toggle("hidden", id !== page);
+    });
+    renderExams();
+    renderTasks();
+    renderAllItems();
+}
+
+$("openExam").addEventListener("click", () => showPage("examPage"));
+$("openTask").addEventListener("click", () => showPage("taskPage"));
+$("examBack").addEventListener("click", () => showPage("home"));
+$("taskBack").addEventListener("click", () => showPage("home"));
+
+function makeElement(tag, text, className) {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    if (className) element.className = className;
+    return element;
+}
+
+function makeButton(text, className, action) {
+    const button = makeElement("button", text, className);
+    button.type = "button";
+    button.addEventListener("click", action);
+    return button;
+}
+
+function renderExams() {
+    const list = $("examPlans");
+    list.replaceChildren();
+
+    const upcoming = exams
+        .filter(e => !e.completed &&
+            escapeDateTime(e.examDate, e.examTime || "23:59") >= Date.now())
+        .sort((a, b) =>
+            escapeDateTime(a.examDate, a.examTime || "23:59") -
+            escapeDateTime(b.examDate, b.examTime || "23:59")
+        );
+
+    $("nextExam").textContent = upcoming.length
+        ? `${upcoming[0].subject}: ${formatRemaining(
+            escapeDateTime(upcoming[0].examDate, upcoming[0].examTime || "23:59")
+          )}`
+        : "No upcoming exams. Add a new exam plan!";
+
+    if (!exams.length) {
+        list.append(makeElement("p", "Your exam plans will appear here.", "empty"));
+        return;
+    }
+
+    exams.forEach(exam => {
+        const card = makeElement("article", "", "plan" + (exam.completed ? " completed" : ""));
+        card.append(makeElement("h3", "📖 " + exam.subject));
+        card.append(makeElement("p", "Syllabus: " + exam.topic));
+        card.append(makeElement("p", `Exam: ${exam.examDate} at ${exam.examTime || "23:59"}`));
+
+        const target = escapeDateTime(exam.examDate, exam.examTime || "23:59");
+        card.append(makeElement("p",
+            exam.completed ? "Completed ✅" : formatRemaining(target),
+            "countdown"
+        ));
+
+        const actions = makeElement("div", "", "plan-actions");
+        actions.append(makeButton(
+            exam.completed ? "Mark Incomplete" : "Mark Completed",
+            "",
+            () => {
+                exam.completed = !exam.completed;
+                save("studyPilotPlans", exams);
+                renderExams();
+            }
+        ));
+        actions.append(makeButton("Delete", "delete-btn", () => {
+            exams = exams.filter(e => e.id !== exam.id);
+            save("studyPilotPlans", exams);
+            renderExams();
+        }));
+
+        card.append(actions);
+        list.append(card);
+    });
+}
+
+$("examForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    const examDate = $("examDate").value;
+    const examTime = $("examTime").value;
+
+    if (escapeDateTime(examDate, examTime) < Date.now()) {
+        alert("Please choose a future exam date and time.");
+        return;
+    }
+
+    exams.push({
+        id: Date.now() + Math.random(),
+        subject: $("examSubject").value.trim(),
+        topic: $("examTopic").value.trim(),
+        examDate,
+        examTime,
+        completed: false
+    });
+
+    save("studyPilotPlans", exams);
+    $("examForm").reset();
+    renderExams();
+});
+
+function renderTasks() {
+    const list = $("taskPlans");
+    list.replaceChildren();
+
+    const active = tasks.filter(t => !t.completed);
+    $("taskSummary").textContent = active.length
+        ? `${active.length} task(s) remaining. Keep going!`
+        : "No pending tasks. Add a new task or enjoy your progress!";
+
+    if (!tasks.length) {
+        list.append(makeElement("p", "Your tasks will appear here.", "empty"));
+        return;
+    }
+
+    tasks.forEach(task => {
+        const card = makeElement("article", "", "plan" + (task.completed ? " completed" : ""));
+        card.append(makeElement("h3", "📝 " + task.subject));
+        card.append(makeElement("p", "Task: " + task.topic));
+        card.append(makeElement("p", "Estimated duration: " + formatDuration(task.durationMinutes)));
+        card.append(makeElement("p", "Deadline: " + new Date(task.deadline).toLocaleString()));
+
+        const countdown = makeElement("p", "", "countdown");
+        countdown.dataset.deadline = task.deadline;
+        countdown.textContent = task.completed
+            ? "Task completed ✅"
+            : formatRemaining(new Date(task.deadline).getTime());
+        card.append(countdown);
+
+        const actions = makeElement("div", "", "plan-actions");
+        actions.append(makeButton(
+            task.completed ? "Mark Incomplete" : "Mark Completed",
+            "",
+            () => {
+                task.completed = !task.completed;
+                save("studyPilotTasks", tasks);
+                renderTasks();
+            }
+        ));
+        actions.append(makeButton("Delete", "delete-btn", () => {
+            tasks = tasks.filter(t => t.id !== task.id);
+            save("studyPilotTasks", tasks);
+            renderTasks();
+        }));
+
+        card.append(actions);
+        list.append(card);
+    });
+}
+
+function renderAllItems() {
+    const list = $("allItems");
+    if (!list) return;
+
+    list.replaceChildren();
+
+    const allItems = [
+        ...exams.map(exam => ({
+            id: exam.id,
+            type: "🎓 Exam",
+            subject: exam.subject,
+            topic: exam.topic,
+            deadline: escapeDateTime(
+                exam.examDate,
+                exam.examTime || "23:59"
+            ),
+            dateLabel: `Exam: ${exam.examDate} at ${exam.examTime || "23:59"}`,
+            completed: !!exam.completed
+        })),
+
+        ...tasks.map(task => ({
+            id: task.id,
+            type: "✅ Task",
+            subject: task.subject,
+            topic: task.topic,
+            deadline: Number(task.deadline),
+            dateLabel: `Deadline: ${new Date(task.deadline).toLocaleString()}`,
+            completed: !!task.completed
+        }))
+    ];
+
+    allItems.sort((a, b) => {
+        if (a.completed !== b.completed) {
+            return Number(a.completed) - Number(b.completed);
+        }
+        return a.deadline - b.deadline;
+    });
+
+    if (allItems.length === 0) {
+        list.append(
+            makeElement(
+                "p",
+                "No tasks or exams yet. Choose a mode above to add your first one!",
+                "empty"
+            )
+        );
+        return;
+    }
+
+    allItems.forEach(item => {
+        const card = makeElement(
+            "article",
+            "",
+            "plan" + (item.completed ? " completed" : "")
+        );
+
+        card.append(makeElement("p", item.type));
+        card.append(makeElement("h3", item.subject));
+        card.append(makeElement("p", "Topic: " + item.topic));
+        card.append(makeElement("p", item.dateLabel));
+
+        card.append(makeElement(
+            "p",
+            item.completed
+                ? "Completed ✅"
+                : formatRemaining(item.deadline),
+            "countdown"
+        ));
+
+        list.append(card);
+    });
+}
+
+$("taskForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    const hours = Number($("durationHours").value);
+    const minutes = Number($("durationMinutes").value);
+    const durationMinutes = hours * 60 + minutes;
+    const deadline = new Date($("taskDeadline").value).getTime();
+
+    if (!Number.isFinite(deadline) || deadline <= Date.now()) {
+        alert("Please choose a future deadline.");
+        return;
+    }
+
+    if (durationMinutes <= 0 || durationMinutes > 600000) {
+        alert("Please enter a valid duration greater than zero.");
+        return;
+    }
+
+    tasks.push({
+        id: Date.now() + Math.random(),
+        subject: $("taskSubject").value.trim(),
+        topic: $("taskTopic").value.trim(),
+        durationMinutes,
+        deadline,
+        completed: false
+    });
+
+    save("studyPilotTasks", tasks);
+    $("taskForm").reset();
+    $("durationHours").value = 1;
+    $("durationMinutes").value = 0;
+    renderTasks();
+});
+
+function updateCountdowns() {
+    document.querySelectorAll("[data-deadline]").forEach(element => {
+        element.textContent = formatRemaining(
+            new Date(element.dataset.deadline).getTime()
+        );
+    });
+
+    if (!$("examPage").classList.contains("hidden")) {
+        renderExams();
+    }
+
+    if (!$("taskPage").classList.contains("hidden")) {
+        // Update visible task countdowns without rebuilding the cards.
+        renderTaskCountdowns();
+    }
+}
+
+function renderTaskCountdowns() {
+    document.querySelectorAll("#taskPlans [data-deadline]").forEach(element => {
+        const task = tasks.find(t => String(t.deadline) === element.dataset.deadline);
+        if (task) {
+            element.textContent = task.completed
+                ? "Task completed ✅"
+                : formatRemaining(new Date(task.deadline).getTime());
+        }
+    });
+}
+
+showQuote();
+renderExams();
+renderTasks();
+
+
+setInterval(() => {
+    showQuote();
+    updateCountdowns();
+
+    if (!$("home").classList.contains("hidden")) {
+        renderAllItems();
+    }
+}, 1000);
+
+renderAllItems();
+
+</script>
+</body>
+</html>
