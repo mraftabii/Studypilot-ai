@@ -15,6 +15,8 @@ StudyPilot AI is a student-focused study planner designed to help students organ
 - 📱 **Responsive Design:** Use the planner on desktop and mobile screens.
 - ✔️ **Progress Tracking:** Mark tasks and exams as completed or delete them when needed.
 
+**AI Disclaimer:** This project was built with the help of AI, while the adjustments, customizations, and final modifications were made by me.
+
 ## 🛠️ Technologies Used
 
 - HTML5
@@ -33,8 +35,6 @@ StudyPilot AI is a student-focused study planner designed to help students organ
 ## 🌐 Live Demo
 
 Visit the live website: **[StudyPilot AI](https://mraftabii.github.io/Studypilot-ai/)**
-
-Replace `YOUR-USERNAME` and `YOUR-REPOSITORY-NAME` with your actual GitHub username and repository name.
 
 ## 🔮 Future Improvements
 
