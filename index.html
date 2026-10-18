@@ -139,6 +139,8 @@ button:hover { background: #3730a3; }
 .plan-actions button { flex: 1; min-width: 120px; }
 .delete-btn { background: #dc2626; }
 .delete-btn:hover { background: #991b1b; }
+.edit-btn { background: #0f766e; }
+.edit-btn:hover { background: #115e59; }
 .secondary { background: #64748b; }
 
 .empty { color: #64748b; padding: 15px 0; }
@@ -274,8 +276,11 @@ button:hover { background: #3730a3; }
             <label for="taskDeadline">Task Deadline — Date and Time</label>
             <input id="taskDeadline" type="datetime-local" required>
 
-            <button class="primary" type="submit">
+            <button class="primary" id="taskSubmitBtn" type="submit">
                 + Add Task
+            </button>
+            <button class="primary secondary hidden" id="cancelTaskEdit" type="button">
+                Cancel Editing
             </button>
         </form>
 
@@ -312,6 +317,22 @@ function getSaved(key) {
 
 let exams = getSaved("studyPilotPlans");
 let tasks = getSaved("studyPilotTasks");
+let editingTaskId = null;
+
+function setTaskFormMode(isEditing) {
+    $("taskSubmitBtn").textContent = isEditing ? "Save Changes" : "+ Add Task";
+    $("cancelTaskEdit").classList.toggle("hidden", !isEditing);
+    const heading = document.querySelector("#taskPage h3");
+    if (heading) heading.textContent = isEditing ? "Edit Task" : "Create a Task";
+}
+
+function cancelTaskEditing() {
+    editingTaskId = null;
+    $("taskForm").reset();
+    $("durationHours").value = 1;
+    $("durationMinutes").value = 0;
+    setTaskFormMode(false);
+}
 
 function save(key, data) {
     try {
@@ -494,6 +515,19 @@ function renderTasks() {
         card.append(countdown);
 
         const actions = makeElement("div", "", "plan-actions");
+        actions.append(makeButton("Edit", "edit-btn", () => {
+            editingTaskId = task.id;
+            $("taskSubject").value = task.subject || "";
+            $("taskTopic").value = task.topic || "";
+            $("durationHours").value = Math.floor(task.durationMinutes / 60);
+            $("durationMinutes").value = task.durationMinutes % 60;
+            const deadlineDate = new Date(Number(task.deadline));
+            deadlineDate.setMinutes(deadlineDate.getMinutes() - deadlineDate.getTimezoneOffset());
+            $("taskDeadline").value = deadlineDate.toISOString().slice(0, 16);
+            setTaskFormMode(true);
+            $("taskForm").scrollIntoView({ behavior: "smooth", block: "start" });
+            $("taskSubject").focus({ preventScroll: true });
+        }));
         actions.append(makeButton(
             task.completed ? "Mark Incomplete" : "Mark Completed",
             "",
@@ -605,21 +639,36 @@ $("taskForm").addEventListener("submit", event => {
         return;
     }
 
-    tasks.push({
-        id: Date.now() + Math.random(),
+    const taskDetails = {
         subject: $("taskSubject").value.trim(),
         topic: $("taskTopic").value.trim(),
         durationMinutes,
-        deadline,
-        completed: false
-    });
+        deadline
+    };
+
+    if (editingTaskId !== null) {
+        const taskToUpdate = tasks.find(task => task.id === editingTaskId);
+        if (!taskToUpdate) {
+            alert("This task could not be found. Please try again.");
+            cancelTaskEditing();
+            return;
+        }
+        Object.assign(taskToUpdate, taskDetails);
+    } else {
+        tasks.push({
+            id: Date.now() + Math.random(),
+            ...taskDetails,
+            completed: false
+        });
+    }
 
     save("studyPilotTasks", tasks);
-    $("taskForm").reset();
-    $("durationHours").value = 1;
-    $("durationMinutes").value = 0;
+    cancelTaskEditing();
     renderTasks();
+    renderAllItems();
 });
+
+$("cancelTaskEdit").addEventListener("click", cancelTaskEditing);
 
 function updateCountdowns() {
     document.querySelectorAll("[data-deadline]").forEach(element => {
