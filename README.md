@@ -32,7 +32,7 @@ StudyPilot AI is a student-focused study planner designed to help students organ
 
 ## 🌐 Live Demo
 
-Visit the live website: **[StudyPilot AI](https://YOUR-USERNAME.github.io/YOUR-REPOSITORY-NAME/)**
+Visit the live website: **[StudyPilot AI](https://mraftabii.github.io/Studypilot-ai/)**
 
 Replace `YOUR-USERNAME` and `YOUR-REPOSITORY-NAME` with your actual GitHub username and repository name.
 
